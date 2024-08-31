@@ -169,16 +169,19 @@ def get_gap_t(args, img, stack_num):
     whole_x = img.shape[2]
     whole_y = img.shape[1]
     whole_t = img.shape[0]
-    #print('whole_x -----> ',whole_x)
-    #print('whole_y -----> ',whole_y)
-    #print('whole_t -----> ',whole_t)
+    # print('whole_x -----> ',whole_x)
+    # print('whole_y -----> ',whole_y)
+    # print('whole_t -----> ',whole_t)
     w_num = math.floor((whole_x-args.patch_x)/args.gap_x)+1
     h_num = math.floor((whole_y-args.patch_y)/args.gap_y)+1
     s_num = math.ceil(args.train_datasets_size/w_num/h_num/stack_num)
+    if s_num <= 1: s_num = 2
     # print('w_num -----> ',w_num)
     # print('h_num -----> ',h_num)
     # print('s_num -----> ',s_num)
     gap_t = math.floor((whole_t-args.patch_t)/(s_num-1))
+    # print('gap_t -----> ',gap_t)
+    if gap_t < 1: gap_t = 1
     #gap_t = math.floor((whole_t)/(s_num-1))
     # print('gap_t -----> ',gap_t)
     return gap_t
@@ -203,7 +206,8 @@ def train_preprocess_lessMemoryMulStacks(args):
     stack_num = len(list(os.walk(im_folder, topdown=False))[-1][-1])
     print('Total stack number -----> ', stack_num)
 
-    print('Reading files...')    
+    print('Reading files...') 
+    print('\033[1;33mPlease check the shape of these image stacks, since some hyperstacks have unusual shapes. In that case, you just need to re-store these images by ImageJ. \033[0m') 
     for im_name in list(os.walk(im_folder, topdown=False))[-1][-1]:
         im_dir = os.path.join(im_folder, im_name)
         noise_im = tiff.imread(im_dir)
@@ -213,7 +217,7 @@ def train_preprocess_lessMemoryMulStacks(args):
         gap_t = get_gap_t(args, noise_im, stack_num)
 
 
-        assert gap_y >= 0 and gap_x >= 0 and gap_t >= 0, "train gat size is negative!"
+        assert gap_y >= 0 and gap_x >= 0 and gap_t >= 0, "The gap size for training is negative! Please use smaller '--patch_xyt', especially smaller '--patch_t'."
         # args.gap_t = gap_t
         # print('gap_t -----> ', gap_t)
         # print('gap_x -----> ', gap_x)
